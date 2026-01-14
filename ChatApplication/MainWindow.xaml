@@ -6,8 +6,10 @@
         xmlns:local="clr-namespace:ChatApplication"
         mc:Ignorable="d"
         Title="💬 Group Chat"
-        Height="650"
-        Width="480"
+        Height="740"
+        Width="490"
+        MinHeight="600"
+        MinWidth="400"
         WindowStartupLocation="CenterScreen"
         Background="#ECE5DD">
 
@@ -15,6 +17,138 @@
         <local:BoolToAlignmentConverter x:Key="BoolToAlignmentConverter" />
         <local:BoolToColorConverter x:Key="BoolToColorConverter" />
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+        <!-- Button Style -->
+        <Style x:Key="IconButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="42" />
+            <Setter Property="Height" Value="42" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="Background" Value="#E8E8E8" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="21"
+                                BorderThickness="0">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#D0D0D0" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#B8B8B8" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#F5F5F5" />
+                                <Setter Property="Opacity" Value="0.5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Send Button Style -->
+        <Style x:Key="SendButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="42" />
+            <Setter Property="Height" Value="42" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Background" Value="#075E54" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="21"
+                                BorderThickness="0">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#064E46" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#053E38" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#A5D6A7" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Emoji Button Style -->
+        <Style x:Key="EmojiButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="36" />
+            <Setter Property="Height" Value="36" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#E0E0E0" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#BDBDBD" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- TextBox Style -->
+        <Style x:Key="ChatTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#E0E0E0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="12,10" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="20">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#075E54" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#F5F5F5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -22,10 +156,9 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- ========== HEADER + KẾT NỐI ========== -->
+        <!-- ========== HEADER ========== -->
         <Border Grid.Row="0" Background="#075E54" Padding="15">
             <Grid>
                 <Grid.RowDefinitions>
@@ -34,64 +167,111 @@
                 </Grid.RowDefinitions>
 
                 <!-- Tiêu đề -->
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
-                    <TextBlock Text="💬 Group Chat"
-                               FontSize="18"
-                               FontWeight="Bold"
-                               Foreground="White"
-                               VerticalAlignment="Center" />
-                    <Border Background="{Binding IsConnected, Converter={StaticResource BoolToColorConverter}}"
-                            CornerRadius="5"
-                            Padding="8,3"
-                            Margin="15,0,0,0"
-                            VerticalAlignment="Center">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+                    <TextBlock Text="💬"
+                               FontSize="24"
+                               VerticalAlignment="Center"
+                               Margin="0,0,10,0" />
+                    <StackPanel>
+                        <TextBlock Text="Group Chat"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Foreground="White" />
                         <TextBlock Text="{Binding ConnectionStatus}"
-                                   Foreground="White"
-                                   FontSize="11" />
-                    </Border>
+                                   FontSize="11"
+                                   Foreground="#A5D6A7" />
+                    </StackPanel>
                 </StackPanel>
 
                 <!-- Form kết nối -->
-                <Grid Grid.Row="1">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="60" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
+                <Border Grid.Row="1"
+                        Background="#064E46"
+                        CornerRadius="10"
+                        Padding="12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
 
-                    <TextBlock Grid.Column="0" Text="Tên:" Foreground="White" VerticalAlignment="Center" Margin="0,0,8,0" />
-                    <TextBox Grid.Column="1"
-                             Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged}"
-                             IsEnabled="{Binding IsNotConnected}"
-                             Padding="8,5"
-                             FontSize="13" />
+                        <TextBox Grid.Column="0"
+                                 Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged}"
+                                 IsEnabled="{Binding IsNotConnected}"
+                                 Style="{StaticResource ChatTextBoxStyle}"
+                                 BorderThickness="0"
+                                 Background="#0A7A6E"
+                                 Foreground="White"
+                                 FontSize="13">
+                            <TextBox.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="8" />
+                                </Style>
+                            </TextBox.Resources>
+                        </TextBox>
 
-                    <TextBlock Grid.Column="2" Text="IP:" Foreground="White" VerticalAlignment="Center" Margin="10,0,8,0" />
-                    <TextBox Grid.Column="3"
-                             Text="{Binding ServerIP, UpdateSourceTrigger=PropertyChanged}"
-                             IsEnabled="{Binding IsNotConnected}"
-                             Padding="8,5"
-                             FontSize="13" />
+                        <TextBlock Grid.Column="1"
+                                   Text="@"
+                                   Foreground="#A5D6A7"
+                                   VerticalAlignment="Center"
+                                   Margin="8,0"
+                                   FontWeight="Bold" />
 
-                    <Button Grid.Column="4"
-                            Content="Kết nối"
-                            Command="{Binding ConnectCommand}"
-                            IsEnabled="{Binding IsNotConnected}"
-                            Padding="15,5"
-                            Margin="10,0,0,0"
-                            Background="#25D366"
-                            Foreground="White"
-                            BorderThickness="0"
-                            FontWeight="SemiBold"
-                            Cursor="Hand" />
-                </Grid>
+                        <TextBox Grid.Column="2"
+                                 Text="{Binding ServerIP, UpdateSourceTrigger=PropertyChanged}"
+                                 IsEnabled="{Binding IsNotConnected}"
+                                 Style="{StaticResource ChatTextBoxStyle}"
+                                 BorderThickness="0"
+                                 Background="#0A7A6E"
+                                 Foreground="White"
+                                 FontSize="13"
+                                 HorizontalContentAlignment="Center">
+                            <TextBox.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="8" />
+                                </Style>
+                            </TextBox.Resources>
+                        </TextBox>
+
+                        <Button Grid.Column="3"
+                                Content="{Binding ConnectButtonText}"
+                                Command="{Binding ConnectCommand}"
+                                IsEnabled="{Binding IsNotConnected}"
+                                Padding="20,8"
+                                Margin="10,0,0,0"
+                                Background="#25D366"
+                                Foreground="White"
+                                FontWeight="SemiBold"
+                                Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="border"
+                                            Background="{TemplateBinding Background}"
+                                            CornerRadius="8"
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="border" Property="Background" Value="#20C35E" />
+                                        </Trigger>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter TargetName="border" Property="Background" Value="#A5D6A7" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </Grid>
+                </Border>
             </Grid>
         </Border>
 
         <!-- ========== DANH SÁCH TIN NHẮN ========== -->
-        <ListBox Grid.Row="1"
+        <ListBox x:Name="MessageList"
+                 Grid.Row="1"
                  ItemsSource="{Binding Messages}"
                  Background="#ECE5DD"
                  BorderThickness="0"
@@ -104,7 +284,7 @@
                 <Style TargetType="ListBoxItem">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                     <Setter Property="Padding" Value="0" />
-                    <Setter Property="Margin" Value="0,3" />
+                    <Setter Property="Margin" Value="0,4" />
                     <Setter Property="Background" Value="Transparent" />
                     <Setter Property="BorderThickness" Value="0" />
                     <Setter Property="Focusable" Value="False" />
@@ -114,14 +294,21 @@
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid>
-                        <Border Padding="10,8"
+                        <Border Padding="12,10"
                                 Margin="{Binding Margin}"
-                                MaxWidth="320"
-                                CornerRadius="8"
+                                MaxWidth="300"
+                                CornerRadius="12"
                                 HorizontalAlignment="{Binding IsMine, Converter={StaticResource BoolToAlignmentConverter}}">
                             <Border.Style>
                                 <Style TargetType="Border">
                                     <Setter Property="Background" Value="White" />
+                                    <Setter Property="Effect">
+                                        <Setter.Value>
+                                            <DropShadowEffect BlurRadius="8"
+                                                              ShadowDepth="1"
+                                                              Opacity="0.1" />
+                                        </Setter.Value>
+                                    </Setter>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsMine}" Value="True">
                                             <Setter Property="Background" Value="#DCF8C6" />
@@ -130,13 +317,7 @@
                                             <Setter Property="Background" Value="#FFF9C4" />
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding User}" Value="FILE">
-                                            <Setter Property="Background" Value="#BBDEFB" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding User}" Value="UPLOAD">
-                                            <Setter Property="Background" Value="#C8E6C9" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding IsDownloaded}" Value="True">
-                                            <Setter Property="Background" Value="#A5D6A7" />
+                                            <Setter Property="Background" Value="#E3F2FD" />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
@@ -145,10 +326,10 @@
                             <StackPanel>
                                 <!-- Tên người gửi -->
                                 <TextBlock Text="{Binding User}"
-                                           FontWeight="Bold"
+                                           FontWeight="SemiBold"
                                            FontSize="11"
                                            Foreground="#075E54"
-                                           Margin="0,0,0,4">
+                                           Margin="0,0,0,5">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
                                             <Style.Triggers>
@@ -160,55 +341,74 @@
                                     </TextBlock.Style>
                                 </TextBlock>
 
-                                <!-- 🔥 HIỂN THỊ ẢNH -->
-                                <Border CornerRadius="5"
-                                        Margin="0,0,0,5"
-                                        Visibility="{Binding HasImage, Converter={StaticResource BoolToVisibility}}"
-                                        Cursor="Hand"
-                                        MouseLeftButtonUp="Image_Click">
+                                <!-- 🔥 HIỂN THỊ ẢNH - ĐƠN GIẢN -->
+                                <Border CornerRadius="8"
+        Margin="0,0,0,5"
+        Visibility="{Binding HasImage, Converter={StaticResource BoolToVisibility}}"
+        Cursor="Hand"
+        MouseLeftButtonUp="Image_Click">
                                     <Image Source="{Binding ImageSource}"
-                                           MaxWidth="280"
-                                           MaxHeight="300"
-                                           Stretch="Uniform"
-                                           RenderOptions.BitmapScalingMode="HighQuality" />
+                                   MaxWidth="260"
+                                   MaxHeight="280"
+                                   Stretch="Uniform"
+                                  RenderOptions.BitmapScalingMode="HighQuality" />
                                 </Border>
 
                                 <!-- Nội dung tin nhắn -->
                                 <TextBlock Text="{Binding Message}"
                                            TextWrapping="Wrap"
                                            FontSize="14"
-                                           Foreground="#303030" />
+                                           Foreground="#303030"
+                                           LineHeight="20" />
 
                                 <!-- Progress bar -->
-                                <ProgressBar Value="{Binding Progress}"
-                                             Height="4"
-                                             Margin="0,8,0,0"
-                                             Foreground="#075E54"
-                                             Visibility="{Binding IsReceiving, Converter={StaticResource BoolToVisibility}}" />
+                                <Grid Margin="0,8,0,0"
+                                      Visibility="{Binding IsReceiving, Converter={StaticResource BoolToVisibility}}">
+                                    <ProgressBar Value="{Binding Progress}"
+                                                 Height="4"
+                                                 Foreground="#075E54"
+                                                 Background="#E0E0E0" />
+                                </Grid>
 
-                                <!-- 🔥 Nút tải xuống (chỉ cho file không phải ảnh) -->
-                                <Button Content="⬇ Tải xuống"
+                                <!-- 🔥 Nút tải xuống -->
+                                <Button Content="⬇️ Tải xuống"
                                         Margin="0,8,0,0"
-                                        Padding="10,5"
+                                        Padding="12,6"
                                         Background="#075E54"
                                         Foreground="White"
-                                        BorderThickness="0"
+                                        FontSize="12"
                                         Cursor="Hand"
                                         Command="{Binding DownloadCommand}"
-                                        Visibility="{Binding ShowDownloadButton, Converter={StaticResource BoolToVisibility}}" />
+                                        Visibility="{Binding ShowDownloadButton, Converter={StaticResource BoolToVisibility}}">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="border"
+                                                    Background="{TemplateBinding Background}"
+                                                    CornerRadius="15"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="border" Property="Background" Value="#064E46" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
 
                                 <!-- 🔥 Nút lưu ảnh -->
                                 <Button Content="💾 Lưu ảnh"
                                         Margin="0,8,0,0"
-                                        Padding="10,5"
+                                        Padding="12,6"
                                         Background="#1976D2"
                                         Foreground="White"
-                                        BorderThickness="0"
+                                        FontSize="12"
                                         Cursor="Hand"
-                                        Command="{Binding DownloadCommand}"
-                                        Visibility="{Binding HasImage, Converter={StaticResource BoolToVisibility}}">
+                                        Command="{Binding DownloadCommand}">
                                     <Button.Style>
                                         <Style TargetType="Button">
+                                            <Setter Property="Visibility" Value="{Binding HasImage, Converter={StaticResource BoolToVisibility}}" />
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsDownloaded}" Value="True">
                                                     <Setter Property="Visibility" Value="Collapsed" />
@@ -216,6 +416,21 @@
                                             </Style.Triggers>
                                         </Style>
                                     </Button.Style>
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="border"
+                                                    Background="{TemplateBinding Background}"
+                                                    CornerRadius="15"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="border" Property="Background" Value="#1565C0" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
                                 </Button>
 
                                 <!-- Đã tải -->
@@ -223,7 +438,7 @@
                                            FontSize="11"
                                            Foreground="#2E7D32"
                                            FontWeight="SemiBold"
-                                           Margin="0,5,0,0"
+                                           Margin="0,6,0,0"
                                            Visibility="{Binding IsDownloaded, Converter={StaticResource BoolToVisibility}}" />
                             </StackPanel>
                         </Border>
@@ -232,58 +447,71 @@
             </ListBox.ItemTemplate>
         </ListBox>
 
-        <!-- ========== EMOJI ========== -->
-        <Border Grid.Row="2" Background="White" Padding="8">
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-                <ItemsControl ItemsSource="{Binding Emojis}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Button Content="{Binding}"
-                                    FontSize="20"
-                                    Width="38"
-                                    Height="38"
-                                    Margin="2"
-                                    Background="#F0F0F0"
-                                    BorderThickness="0"
-                                    Cursor="Hand"
-                                    Command="{Binding DataContext.AddEmojiCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                    CommandParameter="{Binding}"
-                                    IsEnabled="{Binding DataContext.IsConnected, RelativeSource={RelativeSource AncestorType=Window}}" />
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
-        </Border>
-
-        <!-- ========== INPUT ========== -->
-        <Border Grid.Row="3" Background="#F0F0F0" Padding="10">
+        <!-- ========== INPUT AREA ========== -->
+        <Border Grid.Row="2" Background="White" Padding="10,12">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-                <!-- Nút gửi file -->
-                <Button Grid.Column="0"
-                        Width="40"
-                        Height="40"
-                        FontSize="18"
-                        Background="#E0E0E0"
-                        BorderThickness="0"
-                        Cursor="Hand"
-                        Command="{Binding SendFileCommand}"
-                        IsEnabled="{Binding CanSendFile}"
-                        ToolTip="Gửi file (có thể chọn nhiều)">
-                    <Button.Content>
-                        <TextBlock Text="📎">
+                <!-- 🔥 EMOJI PANEL (Ẩn/Hiện) -->
+                <Border Grid.Row="0"
+                        Background="#FAFAFA"
+                        CornerRadius="12"
+                        Padding="8"
+                        Margin="0,0,0,10"
+                        Visibility="{Binding IsEmojiPanelOpen, Converter={StaticResource BoolToVisibility}}">
+                    <ScrollViewer MaxHeight="150"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding Emojis}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Content="{Binding}"
+                                            Style="{StaticResource EmojiButtonStyle}"
+                                            Command="{Binding DataContext.AddEmojiCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Border>
+
+                <!-- Input Row -->
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- 🔥 Nút Emoji Toggle -->
+                    <Button Grid.Column="0"
+                            Style="{StaticResource IconButtonStyle}"
+                            Command="{Binding ToggleEmojiCommand}"
+                            IsEnabled="{Binding IsConnected}"
+                            ToolTip="Chọn emoji">
+                        <TextBlock Text="😊" FontSize="20" />
+                    </Button>
+
+                    <!-- Nút gửi file -->
+                    <Button Grid.Column="1"
+                            Style="{StaticResource IconButtonStyle}"
+                            Margin="8,0,0,0"
+                            Command="{Binding SendFileCommand}"
+                            IsEnabled="{Binding CanSendFile}"
+                            ToolTip="Gửi file">
+                        <TextBlock FontSize="18">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="📎" />
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsSendingFiles}" Value="True">
                                             <Setter Property="Text" Value="⏳" />
@@ -292,32 +520,25 @@
                                 </Style>
                             </TextBlock.Style>
                         </TextBlock>
-                    </Button.Content>
-                </Button>
+                    </Button>
 
-                <!-- Input text -->
-                <TextBox Grid.Column="1"
-                         Text="{Binding InputMessage, UpdateSourceTrigger=PropertyChanged}"
-                         Padding="12,10"
-                         FontSize="14"
-                         Margin="10,0"
-                         BorderThickness="1"
-                         BorderBrush="#CCC"
-                         IsEnabled="{Binding IsConnected}"
-                         VerticalContentAlignment="Center" />
+                    <!-- Input text -->
+                    <TextBox Grid.Column="2"
+                             Text="{Binding InputMessage, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource ChatTextBoxStyle}"
+                             Margin="10,0"
+                             IsEnabled="{Binding IsConnected}"
+                             VerticalContentAlignment="Center" />
 
-                <!-- Nút gửi -->
-                <Button Grid.Column="2"
-                        Content="➤"
-                        Width="45"
-                        Height="40"
-                        FontSize="18"
-                        Background="#075E54"
-                        Foreground="White"
-                        BorderThickness="0"
-                        Cursor="Hand"
-                        Command="{Binding SendCommand}"
-                        IsEnabled="{Binding IsConnected}" />
+                    <!-- Nút gửi -->
+                    <Button Grid.Column="3"
+                            Style="{StaticResource SendButtonStyle}"
+                            Command="{Binding SendCommand}"
+                            IsEnabled="{Binding IsConnected}"
+                            ToolTip="Gửi tin nhắn">
+                        <TextBlock Text="➤" FontSize="16" Foreground="White" />
+                    </Button>
+                </Grid>
             </Grid>
         </Border>
     </Grid>

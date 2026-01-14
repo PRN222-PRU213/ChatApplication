@@ -16,11 +16,10 @@ namespace ChatApplication
 
         public ObservableCollection<ChatMessageViewModel> Messages { get; set; }
 
-        public ObservableCollection<string> Emojis { get; } =
-        new ObservableCollection<string>
-        {
-            "😀","😂","😍","❤️","🔥","👍","🎉","😢","😎","🤔"
-        };
+        public ObservableCollection<string> Emojis { get; } = EmojiProvider.GetAllEmojis();
+
+        // Hoặc nếu chỉ muốn emoji phổ biến:
+        public ObservableCollection<string> Emojiss { get; } = EmojiProvider.GetPopularEmojis();
 
         public ICommand AddEmojiCommand { get; set; }
         public ICommand SendFileCommand { get; set; }
@@ -146,6 +145,25 @@ namespace ChatApplication
         // Dictionary để theo dõi file đang nhận
         private Dictionary<string, ChatMessageViewModel> _receivingFiles = new();
 
+        private bool _isEmojiPanelOpen = false;
+
+        public bool IsEmojiPanelOpen
+        {
+            get => _isEmojiPanelOpen;
+            set
+            {
+                if (_isEmojiPanelOpen != value)
+                {
+                    _isEmojiPanelOpen = value;
+                    OnPropertyChanged(nameof(IsEmojiPanelOpen));
+                }
+            }
+        }
+
+        public string ConnectButtonText => IsConnected ? "✓ Đã kết nối" : "Kết nối";
+
+        public ICommand ToggleEmojiCommand { get; set; }
+
         public MainViewModel()
         {
             Messages = new ObservableCollection<ChatMessageViewModel>();
@@ -168,7 +186,10 @@ namespace ChatApplication
             {
                 InputMessage += emoji;
                 OnPropertyChanged(nameof(InputMessage));
+                // IsEmojiPanelOpen = false; // Uncomment nếu muốn đóng sau khi chọn
             });
+
+            ToggleEmojiCommand = new RelayCommand(() => IsEmojiPanelOpen = !IsEmojiPanelOpen);
 
             // 🔥 Gửi nhiều file
             SendFileCommand = new RelayCommand(async () => await SelectAndSendMultipleFiles());
