@@ -14,19 +14,36 @@ Socket server = new Socket(AddressFamily.InterNetwork,
 server.Bind(new IPEndPoint(IPAddress.Any, 9999));
 server.Listen(10);
 
-Console.WriteLine("Server started...");
+// Hiển thị tất cả IP của máy
+Console.WriteLine("=== SERVER STARTED ===");
+Console.WriteLine($"Listening on port: 9999");
+Console.WriteLine("Available IP addresses:");
+foreach (var ip in Dns.GetHostAddresses(Dns.GetHostName()))
+{
+    if (ip.AddressFamily == AddressFamily.InterNetwork)
+    {
+        Console.WriteLine($"  - {ip}:9999");
+    }
+}
+Console.WriteLine("=======================\n");
 
 while (true)
 {
     Socket client = server.Accept();
     clients.Add(client);
 
+    // Log kết nối mới
+    var clientEndpoint = client.RemoteEndPoint as IPEndPoint;
+    Console.WriteLine($"[CONNECTED] Client từ {clientEndpoint?.Address}:{clientEndpoint?.Port}");
+    Console.WriteLine($"[INFO] Tổng số client: {clients.Count}");
+
     Task.Run(() => HandleClient(client));
 }
 
 void HandleClient(Socket client)
 {
-    byte[] buffer = new byte[1024];
+    // Tăng buffer size để nhận file chunks lớn
+    byte[] buffer = new byte[128 * 1024]; // 128KB buffer
     StringBuilder receiveBuffer = new();
 
     while (true)
@@ -45,7 +62,6 @@ void HandleClient(Socket client)
 
             var msg = JsonSerializer.Deserialize<ChatMessage>(json);
 
-            // 🔥 XỬ LÝ JOIN
             if (msg.Type == "JOIN")
             {
                 groups[client] = msg.Group;
@@ -58,7 +74,6 @@ void HandleClient(Socket client)
                 continue;
             }
 
-            // 🔥 MESSAGE
             msg.Type = "MESSAGE";
             groups[client] = msg.Group;
             Broadcast(msg);

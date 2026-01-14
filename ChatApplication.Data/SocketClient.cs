@@ -22,37 +22,49 @@ namespace ChatApplication.Data
                                  SocketType.Stream,
                                  ProtocolType.Tcp);
 
+            // Tăng buffer size cho socket
+            _socket.ReceiveBufferSize = 256 * 1024; // 256KB
+            _socket.SendBufferSize = 256 * 1024;
+
             _socket.Connect(ip, port);
             Task.Run(ReceiveLoop);
         }
 
         public void Send(ChatMessage msg)
         {
-            string json = JsonSerializer.Serialize(msg) + "\n"; // 🔥 delimiter
+            string json = JsonSerializer.Serialize(msg) + "\n";
             byte[] data = Encoding.UTF8.GetBytes(json);
             _socket.Send(data);
         }
 
         private void ReceiveLoop()
         {
-            byte[] buffer = new byte[1024];
+            // Tăng buffer để nhận file chunks
+            byte[] buffer = new byte[128 * 1024]; // 128KB buffer
 
             while (true)
             {
-                int size = _socket.Receive(buffer);
-                if (size <= 0) break;
-
-                _receiveBuffer.Append(Encoding.UTF8.GetString(buffer, 0, size));
-
-                while (_receiveBuffer.ToString().Contains("\n"))
+                try
                 {
-                    var parts = _receiveBuffer.ToString().Split('\n', 2);
-                    string json = parts[0];
-                    _receiveBuffer.Clear();
-                    _receiveBuffer.Append(parts.Length > 1 ? parts[1] : "");
+                    int size = _socket.Receive(buffer);
+                    if (size <= 0) break;
 
-                    var msg = JsonSerializer.Deserialize<ChatMessage>(json);
-                    MessageReceived?.Invoke(msg);
+                    _receiveBuffer.Append(Encoding.UTF8.GetString(buffer, 0, size));
+
+                    while (_receiveBuffer.ToString().Contains("\n"))
+                    {
+                        var parts = _receiveBuffer.ToString().Split('\n', 2);
+                        string json = parts[0];
+                        _receiveBuffer.Clear();
+                        _receiveBuffer.Append(parts.Length > 1 ? parts[1] : "");
+
+                        var msg = JsonSerializer.Deserialize<ChatMessage>(json);
+                        MessageReceived?.Invoke(msg);
+                    }
+                }
+                catch
+                {
+                    break;
                 }
             }
         }

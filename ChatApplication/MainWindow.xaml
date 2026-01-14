@@ -5,58 +5,223 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ChatApplication"
         mc:Ignorable="d"
-        Title="Group Chat" Height="500" Width="650">
+        Title="Group Chat" Height="650" Width="500">
+
+    <Window.Resources>
+        <local:BoolToAlignmentConverter x:Key="BoolToAlignmentConverter" />
+    </Window.Resources>
 
     <Grid Margin="10">
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- 🔹 CHAT LIST -->
-        <ListBox Grid.Row="0"
+        <!-- 🔹 PANEL KẾT NỐI -->
+        <GroupBox Grid.Row="0" Header="Cấu hình kết nối" Margin="0,0,0,10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="80" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Row 1: Tên + Nút kết nối -->
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Tên:" VerticalAlignment="Center" Margin="5" />
+                <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2"
+                         Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged}"
+                         IsEnabled="{Binding IsNotConnected}"
+                         VerticalAlignment="Center" Margin="5" />
+                <Button Grid.Row="0" Grid.Column="3"
+                        Content="Kết nối"
+                        Margin="5"
+                        Command="{Binding ConnectCommand}"
+                        IsEnabled="{Binding IsNotConnected}" />
+
+                <!-- Row 2: IP + Port -->
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="IP:" VerticalAlignment="Center" Margin="5" />
+                <TextBox Grid.Row="1" Grid.Column="1"
+                         Text="{Binding ServerIP, UpdateSourceTrigger=PropertyChanged}"
+                         IsEnabled="{Binding IsNotConnected}"
+                         VerticalAlignment="Center" Margin="5" />
+                <TextBlock Grid.Row="1" Grid.Column="2" Text="Port:" VerticalAlignment="Center" Margin="5" />
+                <TextBox Grid.Row="1" Grid.Column="3"
+                         Text="{Binding ServerPort, UpdateSourceTrigger=PropertyChanged}"
+                         IsEnabled="{Binding IsNotConnected}"
+                         VerticalAlignment="Center" Margin="5" />
+            </Grid>
+        </GroupBox>
+
+        <!-- 🔹 TRẠNG THÁI KẾT NỐI -->
+        <TextBlock Grid.Row="0" Text="{Binding ConnectionStatus}"
+                   FontWeight="Bold" HorizontalAlignment="Right"
+                   VerticalAlignment="Top" Margin="0,-5,5,0" />
+
+        <!-- 🔹 CHAT LIST - Giao diện kiểu Messenger -->
+        <ListBox Grid.Row="1"
                  ItemsSource="{Binding Messages}"
-                 FontSize="16"/>
+                 Background="#E5DDD5"
+                 BorderThickness="0"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 HorizontalContentAlignment="Stretch">
+
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="Focusable" Value="False" />
+                </Style>
+            </ListBox.ItemContainerStyle>
+
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <!-- Tin nhắn bubble -->
+                        <Border CornerRadius="10"
+                                Padding="10,8"
+                                Margin="{Binding Margin}"
+                                MaxWidth="300"
+                                HorizontalAlignment="{Binding IsMine, Converter={StaticResource BoolToAlignmentConverter}}">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="#FFFFFF" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsMine}" Value="True">
+                                            <Setter Property="Background" Value="#DCF8C6" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding User}" Value="SYSTEM">
+                                            <Setter Property="Background" Value="#FFF3CD" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsFile}" Value="True">
+                                            <Setter Property="Background" Value="#E3F2FD" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+
+                            <StackPanel>
+                                <!-- Tên người gửi (chỉ hiện nếu không phải của mình) -->
+                                <TextBlock Text="{Binding User}"
+                                           FontWeight="Bold"
+                                           FontSize="11"
+                                           Foreground="#075E54"
+                                           Margin="0,0,0,3">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsMine}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <!-- Nội dung tin nhắn -->
+                                <TextBlock Text="{Binding Message}"
+                                           TextWrapping="Wrap"
+                                           FontSize="14" />
+
+                                <!-- Progress bar cho file -->
+                                <ProgressBar Value="{Binding Progress}"
+                                             Height="5"
+                                             Margin="0,5,0,0">
+                                    <ProgressBar.Style>
+                                        <Style TargetType="ProgressBar">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding IsFile}" Value="True" />
+                                                        <Condition Binding="{Binding Progress}" Value="100" />
+                                                    </MultiDataTrigger.Conditions>
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </MultiDataTrigger>
+                                                <DataTrigger Binding="{Binding IsFile}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ProgressBar.Style>
+                                </ProgressBar>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
 
         <!-- 🔹 EMOJI PICKER -->
-        <ScrollViewer Grid.Row="1"
-                      Height="80"
-                      VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="2"
+                      Height="50"
+                      VerticalScrollBarVisibility="Disabled"
+                      HorizontalScrollBarVisibility="Auto"
+                      Margin="0,5,0,0">
             <ItemsControl ItemsSource="{Binding Emojis}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <WrapPanel/>
+                        <StackPanel Orientation="Horizontal" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
 
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Button Content="{Binding}"
-                                FontSize="20"
-                                Width="40"
-                                Height="40"
-                                Margin="3"
+                                FontSize="18"
+                                Width="35"
+                                Height="35"
+                                Margin="2"
                                 Command="{Binding DataContext.AddEmojiCommand,
                                   RelativeSource={RelativeSource AncestorType=Window}}"
-                                CommandParameter="{Binding}" />
+                                CommandParameter="{Binding}"
+                                IsEnabled="{Binding DataContext.IsConnected,
+                                  RelativeSource={RelativeSource AncestorType=Window}}" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
 
-        <!-- 🔹 INPUT + SEND -->
-        <StackPanel Grid.Row="2"
-                    Orientation="Horizontal"
-                    Margin="0,10,0,0">
-            <TextBox Width="420"
-                     FontSize="14"
-                     Text="{Binding InputMessage, UpdateSourceTrigger=PropertyChanged}" />
+        <!-- 🔹 INPUT + FILE + SEND -->
+        <Grid Grid.Row="3" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
-            <Button Content="Send"
-                    Width="120"
-                    Margin="10,0,0,0"
-                    Command="{Binding SendCommand}" />
-        </StackPanel>
+            <!-- Nút gửi file -->
+            <Button Grid.Column="0"
+                    Content="📎"
+                    FontSize="18"
+                    Width="40"
+                    ToolTip="Gửi file"
+                    Command="{Binding SendFileCommand}"
+                    IsEnabled="{Binding IsConnected}" />
+
+            <TextBox Grid.Column="1"
+                     FontSize="14"
+                     Padding="10,8"
+                     Margin="5,0"
+                     Text="{Binding InputMessage, UpdateSourceTrigger=PropertyChanged}"
+                     IsEnabled="{Binding IsConnected}" />
+
+            <Button Grid.Column="2"
+                    Content="➤"
+                    FontSize="18"
+                    Width="50"
+                    Command="{Binding SendCommand}"
+                    IsEnabled="{Binding IsConnected}" />
+        </Grid>
     </Grid>
 </Window>
