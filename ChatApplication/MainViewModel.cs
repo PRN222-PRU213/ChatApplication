@@ -3,6 +3,7 @@ using Microsoft.Win32;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Windows.Input;
 
 namespace ChatApplication
@@ -22,7 +23,7 @@ namespace ChatApplication
         };
 
         public ICommand AddEmojiCommand { get; set; }
-        public ICommand SendFileCommand { get; set; }  // Command mới
+        public ICommand SendFileCommand { get; set; }
 
         private string _inputMessage;
 
@@ -114,10 +115,29 @@ namespace ChatApplication
                     OnPropertyChanged(nameof(IsConnected));
                     OnPropertyChanged(nameof(IsNotConnected));
                     OnPropertyChanged(nameof(ConnectionStatus));
+                    OnPropertyChanged(nameof(CanSendFile));
                 }
             }
         }
 
+        // 🔥 Trạng thái đang gửi file
+        private bool _isSendingFiles = false;
+
+        public bool IsSendingFiles
+        {
+            get => _isSendingFiles;
+            set
+            {
+                if (_isSendingFiles != value)
+                {
+                    _isSendingFiles = value;
+                    OnPropertyChanged(nameof(IsSendingFiles));
+                    OnPropertyChanged(nameof(CanSendFile));
+                }
+            }
+        }
+
+        public bool CanSendFile => IsConnected && !IsSendingFiles;
         public bool IsNotConnected => !_isConnected;
         public string ConnectionStatus => IsConnected ? "🟢 Đã kết nối" : "🔴 Chưa kết nối";
 
@@ -150,8 +170,8 @@ namespace ChatApplication
                 OnPropertyChanged(nameof(InputMessage));
             });
 
-            // Command gửi file
-            SendFileCommand = new RelayCommand(async () => await SelectAndSendFile());
+            // 🔥 Gửi nhiều file
+            SendFileCommand = new RelayCommand(async () => await SelectAndSendMultipleFiles());
         }
 
         private void ConnectToServer()
@@ -230,16 +250,22 @@ namespace ChatApplication
                     });
                 };
 
-                // Xử lý file đã nhận xong
+                // 🔥 Xử lý file đã nhận xong - KHÔNG TỰ ĐỘNG LƯU
                 _chatService.FileReceived += (fileId, fileName, data) =>
                 {
                     App.Current.Dispatcher.Invoke(() =>
                     {
                         if (_receivingFiles.TryGetValue(fileId, out var fileMsg))
                         {
-                            fileMsg.Message = $"📎 Đã nhận: {fileName}";
+                            // Cập nhật thông tin file
+                            fileMsg.Message = $"📎 {fileName} ({FormatFileSize(data.Length)})";
                             fileMsg.Progress = 100;
-                            fileMsg.FileData = data;
+                            fileMsg.FileData = data;  // Lưu data trong memory
+                            fileMsg.FileName = fileName;
+
+                            // 🔥 Gán Command tải file - CHỈ TẢI KHI CLICK
+                            fileMsg.DownloadCommand = new RelayCommand(() => DownloadFile(fileMsg));
+
                             _receivingFiles.Remove(fileId);
                         }
                     });
@@ -257,31 +283,129 @@ namespace ChatApplication
             }
         }
 
-        private async Task SelectAndSendFile()
+        /// <summary>
+        /// Tải file khi người dùng click vào nút Download
+        /// </summary>
+        private void DownloadFile(ChatMessageViewModel fileMsg)
         {
-            if (!IsConnected) return;
+            if (fileMsg.FileData == null || fileMsg.IsDownloaded)
+                return;
+
+            try
+            {
+                var saveDialog = new SaveFileDialog
+                {
+                    Title = "Lưu file",
+                    FileName = fileMsg.FileName,
+                    Filter = GetFileFilter(fileMsg.FileName)
+                };
+
+                if (saveDialog.ShowDialog() == true)
+                {
+                    File.WriteAllBytes(saveDialog.FileName, fileMsg.FileData);
+                    fileMsg.IsDownloaded = true;
+                    fileMsg.Message = $"✅ Đã tải: {fileMsg.FileName}";
+                    AddSystemMessage($"💾 Đã lưu file: {saveDialog.FileName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                AddSystemMessage($"[LỖI] Không thể lưu file: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 🔥 Chọn và gửi NHIỀU FILE cùng lúc
+        /// </summary>
+        private async Task SelectAndSendMultipleFiles()
+        {
+            if (!IsConnected || IsSendingFiles) return;
 
             var dialog = new OpenFileDialog
             {
-                Title = "Chọn file để gửi",
-                Filter = "Tất cả file (*.*)|*.*"
+                Title = "Chọn file để gửi (giữ Ctrl để chọn nhiều file)",
+                Filter = "Tất cả file (*.*)|*.*",
+                Multiselect = true
             };
 
-            if (dialog.ShowDialog() == true)
+            if (dialog.ShowDialog() == true && dialog.FileNames.Length > 0)
             {
-                string filePath = dialog.FileName;
-                var fileInfo = new FileInfo(filePath);
+                string[] filePaths = dialog.FileNames;
+                int totalFiles = filePaths.Length;
 
-                AddSystemMessage($"📤 Đang gửi file: {fileInfo.Name} ({FormatFileSize(fileInfo.Length)})...");
+                long totalSize = filePaths.Sum(f => new FileInfo(f).Length);
+                AddSystemMessage($"📤 Chuẩn bị gửi {totalFiles} file ({FormatFileSize(totalSize)})...");
 
-                await _chatService.SendFileAsync(filePath, progress =>
+                IsSendingFiles = true;
+
+                try
                 {
-                    App.Current.Dispatcher.Invoke(() =>
+                    int sentCount = 0;
+
+                    foreach (string filePath in filePaths)
                     {
-                        // Có thể cập nhật progress bar nếu cần
-                    });
-                });
+                        var fileInfo = new FileInfo(filePath);
+                        sentCount++;
+
+                        var sendingMsg = new ChatMessageViewModel
+                        {
+                            User = "UPLOAD",
+                            Message = $"📤 [{sentCount}/{totalFiles}] Đang gửi: {fileInfo.Name}",
+                            IsMine = true,
+                            IsFile = true,
+                            FileName = fileInfo.Name,
+                            Progress = 0
+                        };
+
+                        Messages.Add(sendingMsg);
+
+                        // Gửi file và đợi hoàn thành
+                        await _chatService.SendFileAsync(filePath, progress =>
+                        {
+                            App.Current.Dispatcher.Invoke(() =>
+                            {
+                                sendingMsg.Progress = progress;
+                                sendingMsg.Message = $"📤 [{sentCount}/{totalFiles}] {fileInfo.Name} ({progress}%)";
+                            });
+                        });
+
+                        // Cập nhật hoàn thành
+                        App.Current.Dispatcher.Invoke(() =>
+                        {
+                            sendingMsg.Progress = 100;
+                            sendingMsg.Message = $"✅ [{sentCount}/{totalFiles}] Đã gửi: {fileInfo.Name}";
+                        });
+
+                        // 🔥 TĂNG DELAY giữa các file để server và client kịp xử lý
+                        await Task.Delay(500);
+                    }
+
+                    AddSystemMessage($"✅ Đã gửi xong {totalFiles} file!");
+                }
+                catch (Exception ex)
+                {
+                    AddSystemMessage($"[LỖI] Gửi file thất bại: {ex.Message}");
+                }
+                finally
+                {
+                    IsSendingFiles = false;
+                }
             }
+        }
+
+        private string GetFileFilter(string fileName)
+        {
+            string ext = Path.GetExtension(fileName).ToLower();
+
+            return ext switch
+            {
+                ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" => $"Image files (*{ext})|*{ext}|All files (*.*)|*.*",
+                ".pdf" => "PDF files (*.pdf)|*.pdf|All files (*.*)|*.*",
+                ".doc" or ".docx" => "Word documents (*.doc;*.docx)|*.doc;*.docx|All files (*.*)|*.*",
+                ".xls" or ".xlsx" => "Excel files (*.xls;*.xlsx)|*.xls;*.xlsx|All files (*.*)|*.*",
+                ".zip" or ".rar" or ".7z" => "Archive files (*.zip;*.rar;*.7z)|*.zip;*.rar;*.7z|All files (*.*)|*.*",
+                _ => $"Files (*{ext})|*{ext}|All files (*.*)|*.*"
+            };
         }
 
         private void AddSystemMessage(string message)

@@ -95,7 +95,7 @@ namespace ChatApplication.Business
             var fileInfo = new FileInfo(filePath);
             if (!fileInfo.Exists) return;
 
-            string fileId = Guid.NewGuid().ToString("N")[..8];
+            string fileId = Guid.NewGuid().ToString("N")[..12];
             string fileName = fileInfo.Name;
             long fileSize = fileInfo.Length;
 
@@ -113,6 +113,8 @@ namespace ChatApplication.Business
                 FileSize = fileSize,
                 TotalChunks = totalChunks
             });
+
+            await Task.Delay(100);
 
             // Đọc và gửi từng chunk
             byte[] buffer = new byte[CHUNK_SIZE];
@@ -138,9 +140,10 @@ namespace ChatApplication.Business
                 // Callback tiến trình
                 progressCallback?.Invoke((i + 1) * 100 / totalChunks);
 
-                // Delay nhỏ để tránh nghẽn mạng
-                await Task.Delay(10);
+                await Task.Delay(30);
             }
+
+            await Task.Delay(100);
 
             // Gửi FILE_END
             _client.Send(new ChatMessage
@@ -152,6 +155,8 @@ namespace ChatApplication.Business
                 FileName = fileName,
                 Message = $"📎 Đã gửi file: {fileName} ({FormatFileSize(fileSize)})"
             });
+
+            await Task.Delay(200);
         }
 
         /// <summary>
@@ -159,10 +164,21 @@ namespace ChatApplication.Business
         /// </summary>
         private void HandleFileMessage(ChatMessage msg)
         {
+            // 🔥 BỎ QUA FILE DO CHÍNH MÌNH GỬI - KHÔNG CẦN LƯU LẠI
+            if (msg.User == _user)
+            {
+                // Chỉ hiển thị thông báo khi gửi xong (FILE_END)
+                if (msg.Type == "FILE_END")
+                {
+                    MessageReceived?.Invoke(msg);
+                }
+                return;
+            }
+
             switch (msg.Type)
             {
                 case "FILE_START":
-                    // Tạo buffer mới cho file
+                    // Tạo buffer mới cho file (chỉ cho file của người khác)
                     _fileBuffers[msg.FileId] = new FileBuffer
                     {
                         FileName = msg.FileName,
@@ -223,6 +239,16 @@ namespace ChatApplication.Business
                 size /= 1024;
             }
             return $"{size:0.##} {sizes[order]}";
+        }
+
+        // Class để lưu trữ các chunks đang nhận
+        private class FileBuffer
+        {
+            public string FileName { get; set; }
+            public long FileSize { get; set; }
+            public int TotalChunks { get; set; }
+            public string User { get; set; }
+            public Dictionary<int, byte[]> Chunks { get; set; }
         }
     }
 }
