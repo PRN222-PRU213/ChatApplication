@@ -390,7 +390,7 @@ namespace ChatApplication
                         await Task.Delay(500);
                     }
 
-                    AddSystemMessage($"✅ Đã gửi xong {totalFiles} file!");
+                    //AddSystemMessage($"✅ Đã gửi xong {totalFiles} file!");
                 }
                 catch (Exception ex)
                 {
