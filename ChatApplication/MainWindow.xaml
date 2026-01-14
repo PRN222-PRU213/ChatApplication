@@ -160,7 +160,20 @@
                                     </TextBlock.Style>
                                 </TextBlock>
 
-                                <!-- Nội dung -->
+                                <!-- 🔥 HIỂN THỊ ẢNH -->
+                                <Border CornerRadius="5"
+                                        Margin="0,0,0,5"
+                                        Visibility="{Binding HasImage, Converter={StaticResource BoolToVisibility}}"
+                                        Cursor="Hand"
+                                        MouseLeftButtonUp="Image_Click">
+                                    <Image Source="{Binding ImageSource}"
+                                           MaxWidth="280"
+                                           MaxHeight="300"
+                                           Stretch="Uniform"
+                                           RenderOptions.BitmapScalingMode="HighQuality" />
+                                </Border>
+
+                                <!-- Nội dung tin nhắn -->
                                 <TextBlock Text="{Binding Message}"
                                            TextWrapping="Wrap"
                                            FontSize="14"
@@ -173,7 +186,7 @@
                                              Foreground="#075E54"
                                              Visibility="{Binding IsReceiving, Converter={StaticResource BoolToVisibility}}" />
 
-                                <!-- Nút tải xuống -->
+                                <!-- 🔥 Nút tải xuống (chỉ cho file không phải ảnh) -->
                                 <Button Content="⬇ Tải xuống"
                                         Margin="0,8,0,0"
                                         Padding="10,5"
@@ -182,10 +195,31 @@
                                         BorderThickness="0"
                                         Cursor="Hand"
                                         Command="{Binding DownloadCommand}"
-                                        Visibility="{Binding IsReadyToDownload, Converter={StaticResource BoolToVisibility}}" />
+                                        Visibility="{Binding ShowDownloadButton, Converter={StaticResource BoolToVisibility}}" />
+
+                                <!-- 🔥 Nút lưu ảnh -->
+                                <Button Content="💾 Lưu ảnh"
+                                        Margin="0,8,0,0"
+                                        Padding="10,5"
+                                        Background="#1976D2"
+                                        Foreground="White"
+                                        BorderThickness="0"
+                                        Cursor="Hand"
+                                        Command="{Binding DownloadCommand}"
+                                        Visibility="{Binding HasImage, Converter={StaticResource BoolToVisibility}}">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsDownloaded}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
 
                                 <!-- Đã tải -->
-                                <TextBlock Text="✓ Đã tải xuống"
+                                <TextBlock Text="✓ Đã lưu"
                                            FontSize="11"
                                            Foreground="#2E7D32"
                                            FontWeight="SemiBold"

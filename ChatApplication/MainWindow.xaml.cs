@@ -21,5 +21,34 @@ namespace ChatApplication
             InitializeComponent();
             DataContext = new MainViewModel();
         }
+
+        // 🔥 Click vào ảnh để xem full size
+        private void Image_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is Border border && border.DataContext is ChatMessageViewModel msg && msg.ImageSource != null)
+            {
+                // Tạo window hiển thị ảnh full
+                var imageWindow = new Window
+                {
+                    Title = $"🖼 {msg.FileName}",
+                    Width = 800,
+                    Height = 600,
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                    Background = new SolidColorBrush(Colors.Black),
+                    Content = new ScrollViewer
+                    {
+                        HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                        VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                        Content = new Image
+                        {
+                            Source = msg.ImageSource,
+                            Stretch = Stretch.Uniform,
+                            Margin = new Thickness(10)
+                        }
+                    }
+                };
+                imageWindow.Show();
+            }
+        }
     }
 }

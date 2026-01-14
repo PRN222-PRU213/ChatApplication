@@ -1,6 +1,7 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
+using System.IO;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 
 namespace ChatApplication
 {
@@ -44,8 +45,45 @@ namespace ChatApplication
                 OnPropertyChanged(nameof(FileData));
                 OnPropertyChanged(nameof(CanDownload));
                 OnPropertyChanged(nameof(IsReadyToDownload));
+
+                // 🔥 Tự động tạo ImageSource nếu là ảnh
+                if (value != null && IsImageFile)
+                {
+                    CreateImageSource(value);
+                }
             }
         }
+
+        // 🔥 IMAGE PROPERTIES
+        private BitmapImage _imageSource;
+
+        public BitmapImage ImageSource
+        {
+            get => _imageSource;
+            set
+            {
+                _imageSource = value;
+                OnPropertyChanged(nameof(ImageSource));
+                OnPropertyChanged(nameof(HasImage));
+            }
+        }
+
+        // 🔥 Kiểm tra có phải file ảnh không
+        public bool IsImageFile
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(FileName)) return false;
+                string ext = Path.GetExtension(FileName).ToLower();
+                return ext is ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".webp";
+            }
+        }
+
+        // 🔥 Có ảnh để hiển thị không
+        public bool HasImage => ImageSource != null && IsImageFile;
+
+        // 🔥 Hiển thị nút download cho file KHÔNG phải ảnh
+        public bool ShowDownloadButton => IsReadyToDownload && !IsImageFile;
 
         // Trạng thái file: đã tải hay chưa
         private bool _isDownloaded = false;
@@ -59,6 +97,7 @@ namespace ChatApplication
                 OnPropertyChanged(nameof(IsDownloaded));
                 OnPropertyChanged(nameof(CanDownload));
                 OnPropertyChanged(nameof(IsReadyToDownload));
+                OnPropertyChanged(nameof(ShowDownloadButton));
             }
         }
 
@@ -77,6 +116,7 @@ namespace ChatApplication
                 OnPropertyChanged(nameof(ProgressText));
                 OnPropertyChanged(nameof(IsReceiving));
                 OnPropertyChanged(nameof(IsReadyToDownload));
+                OnPropertyChanged(nameof(ShowDownloadButton));
             }
         }
 
@@ -99,6 +139,29 @@ namespace ChatApplication
                 _downloadCommand = value;
                 OnPropertyChanged(nameof(DownloadCommand));
                 OnPropertyChanged(nameof(IsReadyToDownload));
+                OnPropertyChanged(nameof(ShowDownloadButton));
+            }
+        }
+
+        // 🔥 Tạo BitmapImage từ byte[]
+        private void CreateImageSource(byte[] imageData)
+        {
+            try
+            {
+                var bitmap = new BitmapImage();
+                using (var stream = new MemoryStream(imageData))
+                {
+                    bitmap.BeginInit();
+                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmap.StreamSource = stream;
+                    bitmap.EndInit();
+                    bitmap.Freeze(); // Cho phép sử dụng cross-thread
+                }
+                ImageSource = bitmap;
+            }
+            catch
+            {
+                ImageSource = null;
             }
         }
 
