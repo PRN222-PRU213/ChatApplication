@@ -57,7 +57,7 @@ namespace ChatApplication
             }
         }
 
-        private string _serverIP = "127.0.0.1";
+        private string _serverIP = "172.16.16.1";
 
         public string ServerIP
         {

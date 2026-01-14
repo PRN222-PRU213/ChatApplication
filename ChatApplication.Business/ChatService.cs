@@ -25,7 +25,7 @@ namespace ChatApplication.Business
         private string _user;
         private string _group;
 
-        public string ServerIP { get; set; } = "127.0.0.1";
+        public string ServerIP { get; set; } = "172.16.16.1";
         public int ServerPort { get; set; } = 9999;
 
         // Buffer để ghép các chunks file nhận được
