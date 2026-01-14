@@ -317,6 +317,9 @@ namespace ChatApplication
         /// <summary>
         /// 🔥 Chọn và gửi NHIỀU FILE cùng lúc
         /// </summary>
+        /// <summary>
+        /// 🔥 Chọn và gửi NHIỀU FILE cùng lúc
+        /// </summary>
         private async Task SelectAndSendMultipleFiles()
         {
             if (!IsConnected || IsSendingFiles) return;
@@ -347,15 +350,22 @@ namespace ChatApplication
                         var fileInfo = new FileInfo(filePath);
                         sentCount++;
 
+                        // 🔥 Đọc file data để hiển thị preview (nếu là ảnh)
+                        byte[] fileData = File.ReadAllBytes(filePath);
+
                         var sendingMsg = new ChatMessageViewModel
                         {
-                            User = "UPLOAD",
+                            User = UserName,  // 🔥 Đổi từ "UPLOAD" sang UserName
                             Message = $"📤 [{sentCount}/{totalFiles}] Đang gửi: {fileInfo.Name}",
                             IsMine = true,
                             IsFile = true,
                             FileName = fileInfo.Name,
                             Progress = 0
                         };
+
+                        // 🔥 Gán FileData để hiển thị ảnh preview
+                        sendingMsg.FileData = fileData;
+                        sendingMsg.DownloadCommand = new RelayCommand(() => DownloadFile(sendingMsg));
 
                         Messages.Add(sendingMsg);
 
@@ -373,7 +383,7 @@ namespace ChatApplication
                         App.Current.Dispatcher.Invoke(() =>
                         {
                             sendingMsg.Progress = 100;
-                            sendingMsg.Message = $"✅ [{sentCount}/{totalFiles}] Đã gửi: {fileInfo.Name}";
+                            sendingMsg.Message = $"✅ Đã gửi: {fileInfo.Name} ({FormatFileSize(fileData.Length)})";
                         });
 
                         // 🔥 TĂNG DELAY giữa các file để server và client kịp xử lý
